@@ -46,6 +46,8 @@ interface CampaignPreviewProps {
 }
 
 const SAMPLE_USER = "username";
+const withSampleNames = (text: string) =>
+  text.replace(/\{username\}/g, SAMPLE_USER).replace(/\{first_name\}/gi, "Ana");
 
 /* ----------------------------- icons ----------------------------- */
 
@@ -96,7 +98,7 @@ const Ico = {
 /* ----------------------------- helpers ----------------------------- */
 
 function renderMessage(text: string, hasLink: boolean, linkUrl: string | undefined, linkPlaceholder: string) {
-  const withName = text.replace(/\{username\}/g, SAMPLE_USER).replace(/\{first_name\}/gi, "Ana");
+  const withName = withSampleNames(text);
   return withName.split(/(\{link\})/g).map((part, i) =>
     part === "{link}" ? (
       <span
@@ -411,7 +413,7 @@ function DmScreen({
           </>
         )}
         {(() => {
-          const resolved = revealMessage.replace(/\{username\}/g, SAMPLE_USER);
+          const resolved = withSampleNames(revealMessage);
           const hasToken = resolved.includes("{link}");
           const showCard = hasLink && hasToken;
           const bodyText = showCard
@@ -458,7 +460,7 @@ function DmScreen({
               <div className="max-w-[80%] rounded-2xl rounded-bl-md bg-zinc-800 px-3 py-2">
                 <p className="whitespace-pre-wrap text-sm">
                   {followUpMessage.trim()
-                    ? followUpMessage.replace(/\{username\}/g, SAMPLE_USER)
+                    ? withSampleNames(followUpMessage)
                     : t("Btw just wanted to say thanks for following me, I appreciate the support 🙌")}
                 </p>
               </div>
