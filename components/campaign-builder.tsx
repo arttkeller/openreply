@@ -925,7 +925,8 @@ export default function CampaignBuilder({ mode, campaignId }: CampaignBuilderPro
               </button>
             )}
             <p className="text-xs text-muted">
-              {"{link}"} {t("inserts the tracked link;")} {"{username}"} {t("personalizes.")}
+              {"{link}"} {t("inserts the tracked link;")} {"{username}"} {t("personalizes.")}{" "}
+              {"{first_name}"} {t("uses the first name once the person is in the DM.")}
             </p>
           </div>
           <div className="mt-3 rounded-lg border border-border p-3">

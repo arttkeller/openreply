@@ -1,5 +1,6 @@
 import * as meta from "@/lib/meta/client";
 import { zernioRequest } from "@/lib/zernio/client";
+import { firstNameFrom } from "@/lib/tracking/message";
 import type { InstagramContext, ZernioContext } from "./context";
 
 export async function getUserFollowStatus({
@@ -20,6 +21,19 @@ export async function getUserFollowStatus({
   } catch {
     return null;
   }
+}
+
+// ponytail: direct Meta only; Zernio has no profile-name endpoint wired here, so
+// {first_name} falls back to no greeting on that provider.
+export async function getUserFirstName({
+  context,
+  recipientId,
+}: {
+  context: InstagramContext;
+  recipientId: string;
+}): Promise<string | null> {
+  if (context.provider !== "META") return null;
+  return firstNameFrom(await meta.getUserName(context.accessToken, recipientId));
 }
 
 export async function getMediaInsights({

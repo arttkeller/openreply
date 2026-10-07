@@ -24,6 +24,7 @@ import {
   MetaApiError,
   RateLimitError,
   TokenExpiredError,
+  getUserFirstName,
   getUserFollowStatus,
   sendCommentReply,
   sendDirectMessage,
@@ -183,6 +184,21 @@ function buildInlineLinkFallback(
   return extraUrls.length > 0 ? `${base}\n${extraUrls.join("\n")}` : base;
 }
 
+/**
+ * Fill {first_name} from the profile name. Only call where the conversation is
+ * already open (button tap, DM trigger, follow-up): before that Instagram does
+ * not share the name, and the renderers drop the token instead.
+ */
+async function fillFirstName(
+  message: string,
+  context: InstagramContext,
+  userId: string
+): Promise<string> {
+  if (!/\{first_name\}/i.test(message)) return message;
+  const firstName = await getUserFirstName({ context, recipientId: userId });
+  return firstName ? message.replace(/\{first_name\}/gi, firstName) : message;
+}
+
 type RevealAutomation = {
   dmMessage: string;
   linkButtonLabel: string | null;
@@ -208,13 +224,14 @@ async function sendRevealDirectMessage({
   commenterName: string | null;
   context: string;
 }): Promise<void> {
+  const dmMessage = await fillFirstName(automation.dmMessage, accessToken, userId);
   if (automation.trackedLinks.length === 0) {
     await sendDirectMessage({
       context: accessToken,
       instagramAccountId: automation.instagramAccount.instagramId,
       userId: userId,
       message: renderMessageWithTracking({
-        message: automation.dmMessage,
+        message: dmMessage,
         commenterName,
         trackedLinks: automation.trackedLinks,
       }),
@@ -225,7 +242,7 @@ async function sendRevealDirectMessage({
   // Try button template first; if Meta rejects it, fall back to inline links.
   const bodyText =
     renderMessageWithoutLink({
-      message: automation.dmMessage,
+      message: dmMessage,
       commenterName,
     }) || "Here's your link:";
   const recipientToken = hashRecipientId(userId);
@@ -258,7 +275,7 @@ async function sendRevealDirectMessage({
         instagramAccountId: automation.instagramAccount.instagramId,
         userId: userId,
         message: buildInlineLinkFallback(
-          automation.dmMessage,
+          dmMessage,
           commenterName,
           automation.trackedLinks,
           bodyText,
@@ -1256,7 +1273,7 @@ async function processFollowUp(job: Job<ProcessFollowUpJob>): Promise<void> {
       instagramAccountId: automation.instagramAccount.instagramId,
       userId: userId,
       message: renderMessageWithoutLink({
-        message: automation.followUpMessage,
+        message: await fillFirstName(automation.followUpMessage, accessToken, userId),
         commenterName: commenterName ?? null,
       }),
     });

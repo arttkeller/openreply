@@ -96,7 +96,7 @@ const Ico = {
 /* ----------------------------- helpers ----------------------------- */
 
 function renderMessage(text: string, hasLink: boolean, linkUrl: string | undefined, linkPlaceholder: string) {
-  const withName = text.replace(/\{username\}/g, SAMPLE_USER);
+  const withName = text.replace(/\{username\}/g, SAMPLE_USER).replace(/\{first_name\}/gi, "Ana");
   return withName.split(/(\{link\})/g).map((part, i) =>
     part === "{link}" ? (
       <span

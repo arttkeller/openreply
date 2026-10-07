@@ -284,6 +284,30 @@ export async function getUserFollowStatus(
 }
 
 /**
+ * The profile name of a user in an active conversation (same consent rule as
+ * the follow status above). Null when Meta does not share it.
+ */
+export async function getUserName(
+  accessToken: string,
+  recipientId: string
+): Promise<string | null> {
+  const url = new URL(`${instagramGraphBase()}/${recipientId}`);
+  url.searchParams.set("fields", "name");
+
+  try {
+    const response = await fetch(url.toString(), {
+      method: "GET",
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!response.ok) return null;
+    const data = await response.json();
+    return typeof data?.name === "string" ? data.name : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * A tappable web_url button in a DM button template. Instagram's button
  * template supports up to 3 buttons; titles are capped at 20 chars by Meta.
  */
